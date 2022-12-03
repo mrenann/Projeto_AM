@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Desenha</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='desenho.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='desenho.js') }}"></script>
+
+</head>
+
+<body style="background-color: #105f90;">
+        <canvas id="canvas" name ="draw" style="background-color: white;"></canvas>
+        <div>
+            <button id=enviar type="button" class="enviar" onclick="abc();">Enviar</button>
+        </div>
+    </body>
+</html>
