@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 base = "https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/"
 pasta = r'./data/'
 pastaPlots = r'./plots/'
-pastaModels = r'./models/'
+pastaModels = r'./modelos/'
 pastaTreino = os.path.join(pasta, 'treino')
 pastaValidacao = os.path.join(pasta, 'validacao')
 pastaTeste = os.path.join(pasta, 'teste')
