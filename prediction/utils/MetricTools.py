@@ -13,7 +13,7 @@ class MetricTools:
         return np.sum(y == y_hat) / len(y)
 
     @staticmethod
-    def confusion_matrix(y, y_hat, nclasses):
+    def confusionMatrix(y, y_hat, nclasses):
         """
         y [np array]: actual labels [values between 0 to nclasses-1]
         y_hat [np array]: predicted labels [values between 0 to nclasses-1]

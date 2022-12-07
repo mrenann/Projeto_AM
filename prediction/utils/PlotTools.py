@@ -5,8 +5,8 @@ import numpy as np
 
 class PlotTools:
     @staticmethod
-    def confusion_matrix(cm, classes, title='Matriz de Confusão', cmap=plt.cm.Blues, figsize=(7, 7), path=None,
-                         filename=None):
+    def confusionMatrix(cm, classes, title='Matriz de Confusão', cmap=plt.cm.Blues, figsize=(7, 7), path=None,
+                        filename=None):
         """
         cm: confusion matrix to be plotted.
         classes: array of labels or class names.
