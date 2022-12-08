@@ -43,12 +43,20 @@ function addClick(x, y, dragging) {
     clickDrag.push(dragging);
 }
 
-function abc(){
-const canvas = document.getElementById('canvas')
-const img    = canvas.toDataURL('image/png')
-    document.write('<p>SEU DESENHO!</p>' +
-        '<img src="'+img+'"/>' +
-        '');
+const submitDrawing = event => {
+    var c = document.getElementById('canvas');
+    var predicaoH1 = document.getElementById('predicao');
+    var dataURL = c.toDataURL();
+    $.ajax({
+        type: "POST",
+        url: "/",
+        data:{
+          imageBase64: dataURL
+        }
+      }).done(function(data) {
+        canvas.style.display=true;
+        predicaoH1.textContent = data['predicao'];
+      });
 }
 
 function redraw() {
@@ -56,7 +64,7 @@ function redraw() {
     context.clearRect(0,0, canvas.width, canvas.height);
     context.strokeStyle = curColor;
     context.lineJoin = "round";
-    context.lineWidth = 3;
+    context.lineWidth = 20;
 for (var i = 0; i < clickX.length; i++) {
     context.beginPath();
     if (clickDrag[i] && i) {
