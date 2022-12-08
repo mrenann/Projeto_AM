@@ -14,24 +14,42 @@ app = Flask(__name__,
             template_folder='web/templates',
             static_url_path='',
             static_folder='web/static')
-model = nn.Sequential(
-    nn.Conv2d(1, 32, 3, padding='same'),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Conv2d(32, 64, 3, padding='same'),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Conv2d(64, 128, 3, padding='same'),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Flatten(),
-    nn.Linear(1152, 512),
-    nn.ReLU(),
-    nn.Linear(512, 36),
-)
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(1, 5, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(5, 5, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(5, 8, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(8, 8, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(8, 16, kernel_size=3, padding=1),
+            nn.ReLU()
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(7 * 7 * 16, 100),
+            nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(100, 36)
+        )
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = out.view(out.shape[0], -1)
+        out = self.fc(out)
+        return out
+
+
+modelo = Net()
 state_dict = torch.load('./prediction/modelos/melhorModeloCom40Epocas.pt', map_location='cpu')
-model.load_state_dict(state_dict, strict=False)
-model.eval()
+modelo.load_state_dict(state_dict, strict=False)
+modelo.eval()
 
 @app.route('/',methods=['GET','POST'])
 def root():
@@ -52,9 +70,9 @@ def root():
                 img = np.array(imagemInvertida)
                 plt.imshow(img)
                 plt.savefig('av.png')
-                x = torch.tensor(img, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.
+                tensor = torch.tensor(img, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.
                 with torch.no_grad():
-                    out = model(x)
+                    out = modelo(tensor)
                 animalPalpite = torch.argsort(-1 * out[0])
                 palpites = [CLASSES[int(p.numpy())] for p in animalPalpite[:3]]
 

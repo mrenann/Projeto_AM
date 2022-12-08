@@ -1,14 +1,15 @@
 # Imports Necessários
 
-from torch.utils.data import TensorDataset
-from torch.utils.data import DataLoader
-import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
 import os
+
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
+from PIL import Image
 from torch import nn, optim
-from torchvision import transforms, models, datasets
+from torch.utils.data import TensorDataset
+from torchvision import transforms
+
 from utils.MetricTools import MetricTools
 from utils.PlotTools import PlotTools
 
@@ -30,14 +31,14 @@ transformacoesImagens = {
 
 # Carregando as imagens e determinando as pastas
 pasta = r'./data/'
-pastaTreino2 = os.path.join(pasta, 'treino') + '/'
-pastaValidacao2 = os.path.join(pasta, 'validacao') + '/'
-pastaTeste2 = os.path.join(pasta, 'teste') + '/'
+pastaTreino = os.path.join(pasta, 'treino') + '/'
+pastaValidacao = os.path.join(pasta, 'validacao') + '/'
+pastaTeste = os.path.join(pasta, 'teste') + '/'
 
 pastas = {
-    'treino': pastaTreino2,
-    'validacao': pastaValidacao2,
-    'teste': pastaTeste2,
+    'treino': pastaTreino,
+    'validacao': pastaValidacao,
+    'teste': pastaTeste,
 }
 
 # Tamanho do batch de treinamento
@@ -50,6 +51,7 @@ print("Número de classes : " + str(numeroClasses) + " Classes")
 animaisTreino = os.listdir(pastas['treino'])
 animais = sorted(animal.split('.')[0] for animal in animaisTreino)
 animalIndice = {animais[i]: i for i in range(len(animais))}
+indiceAnimal = {i : animais[i] for i in range(len(animais))}
 print('Animais:', animais)
 
 # Criando o dataSet
@@ -90,14 +92,14 @@ class Net(nn.Module):
             nn.ReLU(),
             nn.Conv2d(5, 5, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(2),  # 14x14x5
+            nn.MaxPool2d(2),
             nn.Conv2d(5, 8, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.Conv2d(8, 8, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(2),  # 7x7x8
+            nn.MaxPool2d(2),
             nn.Conv2d(8, 16, kernel_size=3, padding=1),
-            nn.ReLU()  # 7x7x16
+            nn.ReLU()
         )
         self.fc = nn.Sequential(
             nn.Linear(7 * 7 * 16, 100),
@@ -113,21 +115,8 @@ class Net(nn.Module):
         return out
 
 
-modeloTreinado = nn.Sequential(
-    nn.Conv2d(1, 32, 3, padding='same'),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Conv2d(32, 64, 3, padding='same'),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Conv2d(64, 128, 3, padding='same'),
-    nn.ReLU(),
-    nn.MaxPool2d(2),
-    nn.Flatten(),
-    nn.Linear(1152, 512),
-    nn.ReLU(),
-    nn.Linear(512, numeroClasses),
-)
+modeloTreinado = Net()
+
 modeloTreinado.to(device)
 
 metricaErro = nn.CrossEntropyLoss()
@@ -137,7 +126,7 @@ otimizador = optim.Adam(modeloTreinado.parameters(), lr=0.001)
 
 def treinar(dataloaders, modelo, otimizador, metricaErro, device, caminhoModelo, numeroEpocas):
     print('Começando o treinamento do modelo...')
-    valid_loss_min = np.Inf
+    minimoErroValidacao = np.Inf
     historicoErroTreino = []
     historicoErroValidacao = []
 
@@ -190,9 +179,9 @@ def treinar(dataloaders, modelo, otimizador, metricaErro, device, caminhoModelo,
         historicoErroTreino.append(erroTreino)
         historicoErroValidacao.append(erroValidacao)
 
-        if erroValidacao < valid_loss_min:
+        if erroValidacao < minimoErroValidacao:
             print('Salvando Modelo...')
-            valid_loss_min = erroValidacao
+            minimoErroValidacao = erroValidacao
             torch.save(modelo.state_dict(), caminhoModelo)
 
     return modelo.cpu(), historicoErroTreino, historicoErroValidacao
@@ -246,8 +235,8 @@ def testar(loaders, modelo, metricaErro, device):
         acertados += np.sum(np.squeeze(predicao.eq(labels.data.view_as(predicao))).cpu().numpy())
         total += entradas.size(0)
 
-    print(
-        "Teste \n\t\tErro: {:.4f}, Acurácia: %2d%% (%2d / %2d)".format(erroTreino, 100. * acertados / total, acertados, total))
+    print("Teste \n\t\tErro: {:.4f}".format(erroTreino))
+    print("Acurácia: %2d%% (%2d / %2d)" % (100. * acertados / total, acertados, total))
 
     return y, yHat
 
